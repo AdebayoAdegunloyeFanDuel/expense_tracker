@@ -4,14 +4,26 @@ A multi-user accounting REST API built with Spring Boot. Users can log income an
 
 ---
 
+## Tech Stack
+
+| Component | Version |
+|-----------|---------|
+| Java | 21 |
+| Spring Boot | 4.1.0 |
+| Spring Framework | 7.0 |
+| Spring Security | 7.0 |
+| Hibernate | 7.1 |
+| jjwt | 0.12.6 |
+| H2 (dev) / PostgreSQL (prod) | — |
+
+---
+
 ## Prerequisites
 
 | Tool | Required Version |
 |------|-----------------|
-| Java (JDK) | 17 |
+| Java (JDK) | 21 |
 | Maven | 3.8+ |
-
-> **Important — Java version:** The project must be built and run with **JDK 17**. Maven will use whichever JDK is on your `PATH` by default; if that is Java 21+ you will need to set `JAVA_HOME` explicitly (see [Build](#build) below).
 
 ---
 
@@ -20,26 +32,20 @@ A multi-user accounting REST API built with Spring Boot. Users can log income an
 ### 1. Clone / open the project
 
 ```bash
-cd /path/to/IncomeTracker
+cd /path/to/expense_tracker
 ```
 
 ### 2. Build
 
 ```bash
-# If your default java is already 17:
 mvn clean install
-
-# If your default java is 21 or 24 (e.g. Homebrew on macOS):
-JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home \
-  mvn clean install
 ```
 
 ### 3. Run
 
 ```bash
 # Option A — Maven plugin
-JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home \
-  mvn spring-boot:run
+mvn spring-boot:run
 
 # Option B — JAR (after building)
 java -jar target/expense-tracker-1.0.0.jar
@@ -59,6 +65,20 @@ All configuration lives in `src/main/resources/application.yml`.
 | `spring.datasource.url` | H2 in-memory | Use PostgreSQL URL for production |
 | `jwt.secret` | (see file) | **Change before deploying** — must be 32+ chars |
 | `jwt.expiration` | `86400000` | Token TTL in milliseconds (24 hours) |
+
+### Production secrets
+
+Never commit real secrets. Inject them via environment variables at runtime:
+
+```bash
+JWT_SECRET=your-strong-secret-here mvn spring-boot:run
+```
+
+```yaml
+# application.yml
+jwt:
+  secret: ${JWT_SECRET}
+```
 
 ### Switching to PostgreSQL
 
@@ -232,13 +252,11 @@ Use these connection settings:
 ## Running Tests
 
 ```bash
-# All tests (requires network on first run to download surefire plugin)
-JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home \
-  mvn test
+# All tests
+mvn test
 
 # Specific test class
-JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home \
-  mvn test -Dtest=BonusPointsServiceTest
+mvn test -Dtest=BonusPointsServiceTest
 ```
 
 ---
@@ -283,11 +301,7 @@ src/
 ```
 
 ---
-
 ## Troubleshooting
-
-**`TypeTag :: UNKNOWN` build crash**
-Maven is using Java 21+. Set `JAVA_HOME` to JDK 17 as shown in the [Build](#build) section.
 
 **`Port 8080 already in use`**
 Either change `server.port` in `application.yml`, or free the port:
@@ -296,7 +310,7 @@ lsof -ti :8080 | xargs kill -9
 ```
 
 **`JWT secret is too short` at startup**
-Update `jwt.secret` in `application.yml` to a string of at least 32 characters.
+Update `jwt.secret` in `application.yml` (or the `JWT_SECRET` env var) to a string of at least 32 characters.
 
-**401 Unauthorized on all requests**
+**`401 Unauthorized` on all requests**
 Include the token from the register/login response: `Authorization: Bearer <token>`
