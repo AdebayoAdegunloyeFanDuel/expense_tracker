@@ -102,6 +102,16 @@ spring:
 
 All endpoints are prefixed with `/api`.
 
+### Root Endpoint (Public)
+
+Check if the API is running:
+
+```
+GET /api/
+```
+
+Returns API information and available endpoints.
+
 ### Authentication
 
 No token required.
