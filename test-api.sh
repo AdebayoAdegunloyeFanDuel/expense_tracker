@@ -31,6 +31,7 @@ TOKEN=$(echo "$REGISTER_RESPONSE" | jq -r '.token' 2>/dev/null)
 if [ "$TOKEN" != "null" ] && [ ! -z "$TOKEN" ]; then
     echo ""
     echo "✓ Registration successful! Token obtained."
+    echo "Token: $TOKEN"
     echo ""
     echo ""
 
