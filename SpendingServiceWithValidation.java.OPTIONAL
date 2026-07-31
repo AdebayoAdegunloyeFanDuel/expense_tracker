@@ -1,0 +1,133 @@
+package com.accounting.service;
+
+import com.accounting.dto.BonusPointsResultDto;
+import com.accounting.dto.CreateSpendingRequest;
+import com.accounting.dto.SpendingDto;
+import com.accounting.entity.Spending;
+import com.accounting.entity.User;
+import com.accounting.repository.IncomeRepository;
+import com.accounting.repository.SpendingRepository;
+import com.accounting.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+/**
+ * OPTIONAL: SpendingService WITH Balance Validation
+ *
+ * This version prevents creating spending if it would result in a negative balance.
+ * Use this if you want to enforce "cash-only" accounting.
+ *
+ * TO USE: Replace the content of SpendingService.java with this file
+ */
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class SpendingServiceWithValidation {
+
+    private final SpendingRepository spendingRepository;
+    private final UserRepository userRepository;
+    private final IncomeRepository incomeRepository;
+    private final BonusPointsService bonusPointsService;
+
+    @Transactional
+    public SpendingDto createSpending(Long userId, CreateSpendingRequest request) {
+        log.info("Creating spending for user={}", userId);
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        validateCategory(request.getCategory());
+
+        // NEW: Validate sufficient balance
+        validateSufficientBalance(userId, request.getAmount());
+
+        Spending spending = Spending.builder()
+            .userId(userId)
+            .category(request.getCategory())
+            .amount(request.getAmount())
+            .transactionDate(request.getTransactionDate())
+            .notes(request.getNotes())
+            .build();
+
+        spending = spendingRepository.save(spending);
+
+        BonusPointsResultDto bonusResult = bonusPointsService.awardPoints(user, spending);
+        log.info("Spending created, bonus result: {}", bonusResult);
+
+        return mapSpendingToDto(spending);
+    }
+
+    @Transactional
+    public void deleteSpending(Long userId, Long spendingId) {
+        log.info("Deleting spending id={} for user={}", spendingId, userId);
+
+        Spending spending = spendingRepository.findById(spendingId)
+            .orElseThrow(() -> new IllegalArgumentException("Spending not found"));
+
+        if (!spending.getUserId().equals(userId)) {
+            throw new SecurityException("User does not own this spending record");
+        }
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        bonusPointsService.reversePoints(user, spending);
+        spendingRepository.deleteByIdAndUserId(spendingId, userId);
+    }
+
+    public List<SpendingDto> getSpendingForUser(Long userId) {
+        return spendingRepository.findByUserIdOrderByTransactionDateDesc(userId, null)
+            .stream()
+            .map(this::mapSpendingToDto)
+            .toList();
+    }
+
+    // NEW: Validate sufficient balance
+    private void validateSufficientBalance(Long userId, BigDecimal requestedAmount) {
+        BigDecimal totalIncome = incomeRepository.getTotalIncomeByUserId(userId);
+        BigDecimal totalSpending = spendingRepository.getTotalSpendingByUserId(userId);
+        BigDecimal currentBalance = totalIncome.subtract(totalSpending);
+
+        log.debug("User {} balance check: income={}, spending={}, balance={}, requested={}",
+            userId, totalIncome, totalSpending, currentBalance, requestedAmount);
+
+        if (currentBalance.compareTo(requestedAmount) < 0) {
+            throw new IllegalStateException(String.format(
+                "Insufficient balance. Available: $%.2f, Requested: $%.2f. " +
+                "Please add income before creating this spending.",
+                currentBalance, requestedAmount
+            ));
+        }
+    }
+
+    private void validateCategory(String category) {
+        List<String> validCategories = List.of(
+            "Car Charging",
+            "Groceries",
+            "Utilities",
+            "Other"
+        );
+
+        if (!validCategories.contains(category)) {
+            throw new IllegalArgumentException("Invalid category: " + category);
+        }
+    }
+
+    private SpendingDto mapSpendingToDto(Spending spending) {
+        return SpendingDto.builder()
+            .id(spending.getId())
+            .userId(spending.getUserId())
+            .category(spending.getCategory())
+            .amount(spending.getAmount())
+            .transactionDate(spending.getTransactionDate())
+            .notes(spending.getNotes())
+            .createdAt(spending.getCreatedAt())
+            .build();
+    }
+}
+
