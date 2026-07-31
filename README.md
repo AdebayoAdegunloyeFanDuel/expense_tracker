@@ -162,6 +162,54 @@ Returns the same shape as register.
 
 ---
 
+### Income
+
+All income endpoints require a JWT token in the `Authorization` header:
+```
+Authorization: Bearer <token>
+```
+
+**Best Practice:** Add income before creating spending transactions to maintain a positive balance.
+
+#### Add Income
+
+```
+POST /api/income
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "source": "Salary",
+  "amount": 1000.00,
+  "transactionDate": "2024-01-15",
+  "notes": "Monthly salary"
+}
+```
+
+**Response:** `201 Created` with the created `IncomeDto`.
+
+Valid sources: Any descriptive text (e.g., "Salary", "Freelance", "Gift", "Investment", etc.)
+
+#### List Income
+
+```
+GET /api/income
+Authorization: Bearer <token>
+```
+
+Returns a paginated list of your income transactions.
+
+#### Delete Income
+
+```
+DELETE /api/income/{id}
+Authorization: Bearer <token>
+```
+
+Removes an income transaction. Changes to balance are immediately reflected.
+
+---
+
 ### Spending
 
 All spending endpoints require a JWT token in the `Authorization` header:
