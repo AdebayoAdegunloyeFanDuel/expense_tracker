@@ -14,6 +14,10 @@ import java.time.LocalDate;
 @Builder
 public class CreateIncomeRequest {
 
+    @NotBlank(message = "Source is required")
+    @Size(max = 100, message = "Source cannot exceed 100 characters")
+    private String source;
+
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
     @DecimalMax(value = "999999.99", message = "Amount is too large")

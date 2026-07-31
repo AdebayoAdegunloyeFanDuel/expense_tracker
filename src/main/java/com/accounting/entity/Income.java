@@ -25,6 +25,9 @@ public class Income {
     private Long userId;
 
     @Column(nullable = false)
+    private String source;
+
+    @Column(nullable = false)
     private BigDecimal amount;
 
     @Column(name = "transaction_date", nullable = false)

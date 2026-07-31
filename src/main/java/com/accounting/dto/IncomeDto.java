@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class IncomeDto {
     private Long id;
     private Long userId;
+    private String source;
     private BigDecimal amount;
 
     @JsonFormat(pattern = "yyyy-MM-dd")

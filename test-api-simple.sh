@@ -51,8 +51,29 @@ if [ "$TOKEN" != "null" ] && [ ! -z "$TOKEN" ]; then
     echo "======================================"
     echo ""
 
-    # Step 2: Test Dashboard
-    echo "Step 2: Getting Dashboard..."
+    # Step 2: Add Income FIRST (Best Practice!)
+    echo "Step 2: Adding Income (Best Practice)..."
+    echo ""
+    echo "Command:"
+    echo 'curl -X POST http://localhost:8080/api/income \'
+    echo '  -H "Authorization: Bearer YOUR_TOKEN" \'
+    echo '  -H "Content-Type: application/json" \'
+    echo '  -d '"'"'{"source":"Salary","amount":1000.00,"transactionDate":"2024-01-01"}'"'"
+    echo ""
+
+    INCOME=$(curl -s -X POST http://localhost:8080/api/income \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{"source":"Salary","amount":1000.00,"transactionDate":"2024-01-01","notes":"Monthly salary"}')
+
+    echo "Response:"
+    echo "$INCOME" | jq . 2>/dev/null || echo "$INCOME"
+    echo ""
+    echo "======================================"
+    echo ""
+
+    # Step 3: Check Dashboard (should show $1000 balance)
+    echo "Step 3: Getting Dashboard (after income)..."
     echo ""
     echo "Command:"
     echo "curl http://localhost:8080/api/dashboard \\"
@@ -63,13 +84,14 @@ if [ "$TOKEN" != "null" ] && [ ! -z "$TOKEN" ]; then
       -H "Authorization: Bearer $TOKEN")
 
     echo "Response:"
-    echo "$DASHBOARD" | jq . 2>/dev/null || echo "$DASHBOARD"
+    echo "$DASHBOARD" | jq '{totalIncome, totalSpending, netBalance}' 2>/dev/null || echo "$DASHBOARD"
     echo ""
     echo "======================================"
     echo ""
 
-    # Step 3: Create a spending
-    echo "Step 3: Creating a Car Charging transaction..."
+    # Step 4: Create a spending
+    # Step 4: Create a spending
+    echo "Step 4: Creating a Car Charging transaction..."
     echo ""
     echo "Command:"
     echo 'curl -X POST http://localhost:8080/api/spending \'
@@ -89,20 +111,27 @@ if [ "$TOKEN" != "null" ] && [ ! -z "$TOKEN" ]; then
     echo "======================================"
     echo ""
 
-    # Step 4: Get updated dashboard
-    echo "Step 4: Getting updated Dashboard (with bonus points)..."
+    # Step 5: Get updated dashboard
+    echo "Step 5: Getting Final Dashboard (with spending & bonus points)..."
     echo ""
 
     DASHBOARD2=$(curl -s http://localhost:8080/api/dashboard \
       -H "Authorization: Bearer $TOKEN")
 
     echo "Response:"
-    echo "$DASHBOARD2" | jq . 2>/dev/null || echo "$DASHBOARD2"
+    echo "$DASHBOARD2" | jq '{totalIncome, totalSpending, netBalance, currentBonusPoints, pointsToNextReward}' 2>/dev/null || echo "$DASHBOARD2"
     echo ""
     echo "======================================"
     echo ""
 
     echo "✓ All tests completed!"
+    echo ""
+    echo "📊 Summary:"
+    echo "  • Started with: $0"
+    echo "  • Added income: $1000"
+    echo "  • Spent: $25.50 (Car Charging)"
+    echo "  • Final balance: $974.50"
+    echo "  • Bonus points: 1 (14 more for reward!)"
     echo ""
     echo "IMPORTANT: The Authorization header format is:"
     echo "  -H \"Authorization: Bearer YOUR_TOKEN\""
