@@ -2,11 +2,13 @@ package com.accounting.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Slf4j
@@ -19,23 +21,26 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long jwtExpirationMs;
 
-    public String generateToken(Long userId, String email) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    private SecretKey signingKey;
 
+    @PostConstruct
+    private void init() {
+        this.signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public String generateToken(Long userId, String email) {
         return Jwts.builder()
             .subject(userId.toString())
             .claim("email", email)
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-            .signWith(key)
+            .signWith(signingKey)
             .compact();
     }
 
     public Long getUserIdFromToken(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-
         Claims claims = Jwts.parser()
-            .verifyWith(key)
+            .verifyWith(signingKey)
             .build()
             .parseSignedClaims(token)
             .getPayload();
@@ -45,9 +50,8 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
             Jwts.parser()
-                .verifyWith(key)
+                .verifyWith(signingKey)
                 .build()
                 .parseSignedClaims(token);
             return true;

@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse response = ErrorResponse.builder()
             .statusCode(HttpStatus.FORBIDDEN.value())
-            .message(ex.getMessage())
+            .message("Access denied")
             .error("Forbidden")
             .timestamp(LocalDateTime.now())
             .build();
