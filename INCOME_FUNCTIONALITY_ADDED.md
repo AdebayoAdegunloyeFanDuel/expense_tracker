@@ -1,4 +1,4 @@
-# ✅ UPDATED: test-api-simple.sh Now Includes Income!
+you# ✅ UPDATED: test-api-simple.sh Now Includes Income!
 
 ## What Changed
 
