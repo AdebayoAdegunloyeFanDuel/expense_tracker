@@ -6,6 +6,7 @@ import com.accounting.dto.IncomeDto;
 import com.accounting.dto.SpendingDto;
 import com.accounting.dto.UserDto;
 import com.accounting.service.BonusPointsService;
+import com.accounting.service.IncomeService;
 import com.accounting.service.SpendingService;
 import com.accounting.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class DashboardController {
     private final UserService userService;
     private final BonusPointsService bonusPointsService;
     private final SpendingService spendingService;
+    private final IncomeService incomeService;
 
     @GetMapping
     public ResponseEntity<DashboardDto> getDashboard(
@@ -33,8 +35,15 @@ public class DashboardController {
 
         UserDto user = userService.getUserProfile(userId);
 
-        List<SpendingDto> recentSpendings = List.of();
-        List<IncomeDto> recentIncomes = List.of();
+        List<SpendingDto> recentSpendings = spendingService.getSpendingForUser(userId)
+            .stream()
+            .limit(20)
+            .toList();
+
+        List<IncomeDto> recentIncomes = incomeService.getIncomeForUser(userId)
+            .stream()
+            .limit(20)
+            .toList();
 
         List<BonusPointsHistoryDto> recentRewards = bonusPointsService.getPointsHistory(userId)
             .stream()

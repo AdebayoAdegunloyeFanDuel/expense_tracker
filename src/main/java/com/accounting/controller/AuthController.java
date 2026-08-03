@@ -52,9 +52,8 @@ public class AuthController {
             new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        UserDto userDto = userService.getUserProfile(
-            Long.valueOf(authentication.getPrincipal().toString())
-        );
+        Long userId = userService.getUserByEmail(authentication.getName()).getId();
+        UserDto userDto = userService.getUserProfile(userId);
 
         String token = jwtTokenProvider.generateToken(userDto.getId(), userDto.getEmail());
 
