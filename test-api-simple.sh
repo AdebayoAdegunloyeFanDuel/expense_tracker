@@ -58,13 +58,13 @@ if [ "$TOKEN" != "null" ] && [ ! -z "$TOKEN" ]; then
     echo 'curl -X POST http://localhost:8080/api/income \'
     echo '  -H "Authorization: Bearer YOUR_TOKEN" \'
     echo '  -H "Content-Type: application/json" \'
-    echo '  -d '"'"'{"source":"Salary","amount":1000.00,"transactionDate":"2024-01-01"}'"'"
+    echo '  -d '"'"'{"source":"Salary","amount":1000.00,"transactionDate":"2026-05-01"}'"'"
     echo ""
 
     INCOME=$(curl -s -X POST http://localhost:8080/api/income \
       -H "Authorization: Bearer $TOKEN" \
       -H "Content-Type: application/json" \
-      -d '{"source":"Salary","amount":1000.00,"transactionDate":"2024-01-01","notes":"Monthly salary"}')
+      -d '{"source":"Salary","amount":1000.00,"transactionDate":"2026-05-01","notes":"Monthly salary"}')
 
     echo "Response:"
     echo "$INCOME" | jq . 2>/dev/null || echo "$INCOME"
@@ -97,13 +97,13 @@ if [ "$TOKEN" != "null" ] && [ ! -z "$TOKEN" ]; then
     echo 'curl -X POST http://localhost:8080/api/spending \'
     echo '  -H "Authorization: Bearer YOUR_TOKEN" \'
     echo '  -H "Content-Type: application/json" \'
-    echo '  -d '"'"'{"category":"Car Charging","amount":25.50,"transactionDate":"2024-01-15","notes":"Test"}'"'"
+    echo '  -d '"'"'{"category":"Car Charging","amount":25.50,"transactionDate":"2026-05-01","notes":"Test"}'"'"
     echo ""
 
     SPENDING=$(curl -s -X POST http://localhost:8080/api/spending \
       -H "Authorization: Bearer $TOKEN" \
       -H "Content-Type: application/json" \
-      -d '{"category":"Car Charging","amount":25.50,"transactionDate":"2024-01-15","notes":"Test transaction"}')
+      -d '{"category":"Car Charging","amount":25.50,"transactionDate":"2026-05-01","notes":"Test transaction"}')
 
     echo "Response:"
     echo "$SPENDING" | jq . 2>/dev/null || echo "$SPENDING"

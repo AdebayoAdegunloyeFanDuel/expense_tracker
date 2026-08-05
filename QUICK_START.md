@@ -26,7 +26,7 @@ I've added:
 mvn clean spring-boot:run
 
 # In a new terminal, run:
-./test-api.sh
+./test-api-simple.sh
 ```
 
 This will:
@@ -147,7 +147,7 @@ If the application is currently running:
 
    Or run the test script:
    ```bash
-   ./test-api.sh
+   ./test-api-simple.sh
    ```
 
 ---
